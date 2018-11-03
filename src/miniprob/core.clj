@@ -1,7 +1,15 @@
 (ns miniprob.core
-  (:gen-class))
+  (:gen-class)
+  (:refer-clojure :exclude [eval]))
 
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
-  (println "Hello, World!"))
+(defn eval [exp]
+  """
+  Evaluates the given expression.
+  """
+  (cond
+    (number? exp) exp
+    :else
+      (->> exp
+           (str "THERE WAS AN ATTEMPT: ")
+           (Exception.)
+           throw)))
