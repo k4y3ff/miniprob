@@ -39,13 +39,20 @@
     variables in anonymous functions.
     """
     (cond
+      (boolean? exp)    exp
       (number? exp)     exp
       (= '+ exp)        clojure.core/+
       (= '- exp)        clojure.core/-
+      (= '= exp)        clojure.core/=
       (symbol? exp)     (env exp)
       (seq? exp)
         (let [[operator & operands] exp]
           (cond
+            (= 'if operator)
+              (let [[check result else] operands]
+                (if (eval check trace env)
+                  result
+                  else))
             (= 'flip operator)
               (flip (first operands) trace)
             (= 'fn operator)

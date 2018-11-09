@@ -87,7 +87,29 @@
     (is (= (eval '((fn [x] ((fn [] x))) 0)) 0))
     (is (= (eval '((fn [x] ((fn [x] x) 1)) 0)) 1))))
 
-(deftest fn-args-symbol
+(deftest fn-args-symbol-test
   (testing "anonymous functions that are passed a symbol as an argument work
       as expected"
     (is (= (eval '((fn [+ x y] (+ x y)) - 2 1))) 1)))
+
+(deftest equality-test
+  (testing "equal sign = performs simple equality check"
+    (is (eval '(= 0 0)))))
+
+(deftest if-test
+  (testing "if operator behaves as expected when passed a boolean value as the
+      first argument"
+    (is (zero? (eval '(if true 0 1))))
+    (is (= (eval '(if false 0 1)) 1))))
+
+(deftest if-check-test
+  (testing "if operator behaves as expected when passed an equality check as the
+      first argument"
+    (is (zero? (eval '(if (= 0 0) 0 1))))
+    (is (= (eval '(if (= 0 1) 0 1)) 1))))
+
+(deftest if-fn-fn-test
+  (testing "if operator behaves as expected when an argument is an argument is
+      an anonymous function that calls another anonymous function"
+    (is (zero? (eval '(if true 0 ((fn [f] (f f)) (fn [f] (f f)))))))
+    (is (zero? (eval '(if false ((fn [f] (f f)) (fn [f] (f f))) 0))))))
