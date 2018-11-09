@@ -3,7 +3,7 @@
 
 (declare apply)
 
-(defrecord Procedure [params body])
+(defrecord Procedure [params body env])
 
 (defn flip
   ([]
@@ -44,17 +44,17 @@
       (= '- exp)        clojure.core/-
       (symbol? exp)     (env exp)
       (seq? exp)
-        (let [[operator & args] exp]
+        (let [[operator & operands] exp]
           (cond
             (= 'flip operator)
-              (flip (first args) trace)
+              (flip (first operands) trace)
             (= 'fn operator)
-              (let [[params body] args]
-                (Procedure. params body))
+              (let [[params body] operands]
+                (Procedure. params body env))
             :else
               (apply (eval operator trace env)
                      trace
-                     (map #(eval % trace env) args)))))))
+                     (map #(eval % trace env) operands)))))))
 
 (defn apply [procedure trace args]
   """
@@ -64,5 +64,8 @@
   indicated.
   """
  (if (= (type procedure) Procedure)
-   (eval (:body procedure) trace (zipmap (:params procedure) args))
+   (eval (:body procedure)
+         trace
+         (merge (:env procedure)
+                (zipmap (:params procedure) args)))
    (clojure.core/apply procedure args)))

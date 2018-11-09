@@ -59,3 +59,35 @@
                               #(eval '(+ (flip) (flip :a) (flip :b))
                                       {:a 0 :b 1}))]
       (is (zero? (count (filter #(and (not= 1 %) (not= 2 %)) results)))))))
+
+(deftest fn-simple-test
+  (testing "simple anonymous functions that can return at most one value with no
+      flips work as expected"
+    (is (= (eval '((fn [x] (+ 2 x)) 3) {}) 5))
+    (is (= (eval '((fn [] 0)) {}) 0))
+    (is (= (eval '((fn [f] (f)) (fn [] 0)) {}) 0))))
+
+(deftest fn-flip-no-args-test
+  (testing "anonymous functions containing a flip with no arguments work as
+      expected"
+    (let [results (repeatedly 100
+                              #(eval '((fn [f] (f)) (fn [] (flip))) {}))]
+      (is (zero? (count (filter #(and (not (zero? %)) (not= 1 %)) results)))))))
+
+(deftest fn-flip-tags-test
+  (testing "anonymous functions containing a flip with a tag work as expected"
+    (let [results (repeatedly 100
+                              #(eval '((fn [f] (f)) (fn [] (+ (flip) (flip :tag)))) {:tag 1}))]
+      (is (zero? (count (filter #(and (not= 1 %) (not= 2 %)) results)))))
+    (is (= (eval '((fn [f] (+ (f) (f))) (fn [] (flip :tag))) 2)))))
+
+(deftest fn-args-fn-test
+  (testing "anonymous functions that are passed another fn as an argument work
+      as expected"
+    (is (= (eval '((fn [x] ((fn [] x))) 0)) 0))
+    (is (= (eval '((fn [x] ((fn [x] x) 1)) 0)) 1))))
+
+(deftest fn-args-symbol
+  (testing "anonymous functions that are passed a symbol as an argument work
+      as expected"
+    (is (= (eval '((fn [+ x y] (+ x y)) - 2 1))) 1)))
